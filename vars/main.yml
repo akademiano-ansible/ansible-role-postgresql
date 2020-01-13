@@ -1,2 +1,16 @@
 ---
 # vars file for egeneralov.postgresql
+pgdg_supported_versions:
+  - 10
+  - 11
+  - 12
+
+pgdg_base_packages:
+  - "postgresql-{{ pgdg_version }}"
+  - "postgresql-doc-{{ pgdg_version }}"
+  - "postgresql-client-{{ pgdg_version }}"
+  - "postgresql-common"
+
+pgdb_tools:
+  - "python3-psycopg2"
+  - "sudo"

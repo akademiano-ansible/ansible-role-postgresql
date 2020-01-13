@@ -1,12 +1,18 @@
 ---
 # defaults file for egeneralov.postgresql
 
-pgdg_version: 9.6
+pgdg_version: 12.1
 
-pgdg_users:
-  - user: root
-    password: root
-    database: root
+pgdg_postgis_versions: 3
+pgdg_postgis_install: True
+
+pgdg_extensions:
+  - pg-stat-kcache
+
+#pgdg_users:
+#  - user: root
+#    password: root
+#    database: root
 
 # pgdg_databases:
 #   - name: root
@@ -101,7 +107,7 @@ pgdg_postgresql_conf:
 # # - { "k": "ssl_ecdh_curve", "v": "'prime256v1'" }
 # # - { "k": "ssl_ca_file", "v": "''" }
 # # - { "k": "ssl_crl_file", "v": "''" }
-# # - { "k": "password_encryption", "v": "on" }
+  - { "k": "password_encryption", "v": "scram-sha-256" }
 # # - { "k": "db_user_namespace", "v": "off" }
 # # - { "k": "row_security", "v": "on" }
 # # - { "k": "krb_server_keyfile", "v": "''" }
@@ -263,17 +269,5 @@ pgdg_pg_hba_conf:
       "database": "all",
       "user": "all",
       "address": "127.0.0.1/32",
-      "method": "md5"
+      "method": "scram-sha-256"
     }
-
-
-
-pgdg_supported_versions:
-  - 9.2
-  - 9.3
-  - 9.4
-  - 9.5
-  - 9.6
-  - 10
-  - 11
-  - 12

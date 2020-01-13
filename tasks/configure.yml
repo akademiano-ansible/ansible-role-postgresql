@@ -1,5 +1,5 @@
 
-- name: "configure : postgresql.conf"
+- name: "Postgresql | Configure | postgresql.conf"
   lineinfile:
     path: "/etc/postgresql/{{ pgdg_version }}/main/postgresql.conf"
     regexp: '#?{{ item.k }} =.*'
@@ -8,18 +8,18 @@
   with_items: "{{ pgdg_postgresql_conf }}"
   register: pgdg_conf
 
-- name: "configure : conf.d"
+- name: "Postgresql | Configure | conf.d"
   file:
     path: "/etc/postgresql/{{ pgdg_version }}/main/conf.d"
     state: directory
 
-- name: "configure : pg_hba.conf"
+- name: "Postgresql | Configure | pg_hba.conf"
   template:
     src: pg_hba.conf.j2
     dest: "/etc/postgresql/{{ pgdg_version }}/main/pg_hba.conf"
   register: pgdg_hba
 
-- name: "(re)start : postgresql"
+- name: "Postgresql | Configure | (re)start"
   systemd:
     name: "postgresql@{{ pgdg_version }}-main.service"
     state: "{% if pgdg_conf is changed or pgdg_hba is changed %}re{% endif %}started"

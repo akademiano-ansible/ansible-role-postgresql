@@ -1,7 +1,7 @@
 ---
 # tasks file for egeneralov.postgresql
 
-- name: "check : if {{ pgdg_version }} is supported by role"
+- name: "Postgresql | check | if {{ pgdg_version }} is supported by role"
   assert:
     that:
       - "pgdg_version in pgdg_supported_versions"

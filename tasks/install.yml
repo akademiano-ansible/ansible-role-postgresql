@@ -1,17 +1,23 @@
+---
 
-- name: "install : postgresql"
+- name: "Postgresql | Install | Main"
+  apt:
+    name: "{{pgdg_base_packages}}"
+    state: latest
+
+- name: "Postgresql | Install | Tools"
+  apt:
+    name: "{{pgdb_tools}}"
+    state: latest
+
+- name: "Postgresql | Install | Modules"
+  apt:
+    name: "postgresql-{{ pgdg_version }}-{{item}}"
+  loop: "{{pgdg_extensions}}"
+
+- name: "Postgresql | Install | Postgis"
   apt:
     name:
-      - "postgresql-{{ pgdg_version }}"
-      - "postgresql-common"
-      - "postgresql-doc-{{ pgdg_version }}"
-      - "postgresql-client-{{ pgdg_version }}"
-      - "postgresql-server-dev-{{ pgdg_version }}"
-      - "postgresql-{{ pgdg_version }}-pg-stat-kcache"
-  register: pgdg_installation
-
-- name: "install : tools"
-  apt:
-    name:
-      - "python-psycopg2"
-      - "sudo"
+      - "postgresql-{{ pgdg_version }}-postgis-{{pgdg_postgis_versions}}"
+      - "postgresql-{{ pgdg_version }}-postgis-{{pgdg_postgis_versions}}-scripts"
+  when: pgdg_postgis_install

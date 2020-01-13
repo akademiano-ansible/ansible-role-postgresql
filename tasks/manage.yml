@@ -1,5 +1,5 @@
 
-- name: "manage : create databases"
+- name: "Postgresql | Manage | Create databases"
   become: true
   become_user: postgres
   postgresql_db:
@@ -9,7 +9,7 @@
   with_items:
     - "{{ pgdg_users }}"
 
-- name: "manage : create users"
+- name: "Postgresql | Manage | Create users"
   become: true
   become_user: postgres
   postgresql_user:
@@ -20,7 +20,7 @@
   with_items:
     - "{{ pgdg_users }}"
 
-- name: "manage : DB permissions"
+- name: "Postgresql | Manage | DB permissions"
   postgresql_privs:
     db: postgres
     privs: "{{ item.privs | default('ALL') }}"
@@ -32,7 +32,7 @@
   become_user: postgres
   with_items: "{{ pgdg_users }}"
 
-- name: "manage : in-DB permissions"
+- name: "Postgresql | Manage | in-DB permissions"
   postgresql_privs:
     database: "{{ item.database }}"
     roles: "{{ item.user }}"

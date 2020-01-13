@@ -29,5 +29,4 @@ galaxy_info:
   galaxy_tags:
     - postgres
     - postgresql
-dependencies:
-- egeneralov.postgresql-repository
+dependencies: []
