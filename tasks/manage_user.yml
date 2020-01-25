@@ -1,0 +1,29 @@
+---
+
+- name: "Postgresql | Manage | Users | User | {{ user.user }} | Check Hash passwords"
+  shell: "grep -i \"{{ user.password | password_hash('sha256', pgdb_salt) }}\" {{ pgdb_hash_cache_dir }}/.{{ user.user }}_password_hash"
+  become: yes
+  register: pgdg_check_hash_password
+  changed_when: pgdg_check_hash_password.rc != 0
+  failed_when: false
+  tags: skip_ansible_lint
+
+- name: "Postgresql | Manage | Users | User | {{ user.user }} | Create users"
+  become: true
+  become_user: postgres
+  postgresql_user:
+    name: "{{ user.user }}"
+    password: "{{ user.password }}"
+    state: "{{ user.state | default('present') }}"
+    db: "{{ user.database | default(omit) }}"
+    encrypted: yes
+  when: pgdg_check_hash_password.changed
+  tags: skip_ansible_lint
+  register: pgdg_set_user_password
+
+- name: "Postgresql | Manage | Users | User | {{ user.user }} | Hash passwords"
+  copy:
+    content: "{{ user.password | password_hash('sha256', pgdb_salt) }}"
+    dest: "{{ pgdb_hash_cache_dir }}/.{{ user.user }}_password_hash"
+  become: yes
+  when: pgdg_check_hash_password.changed and pgdg_set_user_password.changed

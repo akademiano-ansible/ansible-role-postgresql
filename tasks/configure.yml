@@ -1,27 +1,48 @@
+---
+
+- name: Postgresql | Configure | Path | postgresql.conf
+  set_fact:
+    pgdg_postgresql_conf_path: "/etc/postgresql/{{ pgdg_version }}/main/postgresql.conf"
+
 
 - name: "Postgresql | Configure | postgresql.conf"
   lineinfile:
-    path: "/etc/postgresql/{{ pgdg_version }}/main/postgresql.conf"
+    path: "{{ pgdg_postgresql_conf_path }}"
     regexp: '#?{{ item.k }} =.*'
     line: '{{ item.k }} = {{ item.v }}'
     state: "{{ item.state | default('present') }}"
-  with_items: "{{ pgdg_postgresql_conf }}"
+  loop: "{{ pgdg_postgresql_conf }}"
   register: pgdg_conf
+  notify: postgresql restart
+  become: yes
+
+- name: "Postgresql | Configure | postgresql.conf | shared_preload_libraries"
+  lineinfile:
+    path: "{{ pgdg_postgresql_conf_path }}"
+    regexp: "#?shared_preload_libraries =.*"
+    line: "shared_preload_libraries = '{{ pgdg_shared_preload_libraries |  join(\", \") }}'"
+    state: present
+  register: pgdg_conf_shared_preload_libraries
+  notify: postgresql restart
+  become: yes
+  when: pgdg_shared_preload_libraries_change_allow
 
 - name: "Postgresql | Configure | conf.d"
   file:
     path: "/etc/postgresql/{{ pgdg_version }}/main/conf.d"
     state: directory
+  become: yes
 
 - name: "Postgresql | Configure | pg_hba.conf"
   template:
     src: pg_hba.conf.j2
     dest: "/etc/postgresql/{{ pgdg_version }}/main/pg_hba.conf"
   register: pgdg_hba
+  notify: postgresql restart
+  become: yes
 
-- name: "Postgresql | Configure | (re)start"
+- name: "Postgresql | Configure | Systemd | DaemonReload"
   systemd:
-    name: "postgresql@{{ pgdg_version }}-main.service"
-    state: "{% if pgdg_conf is changed or pgdg_hba is changed %}re{% endif %}started"
-    enabled: yes
     daemon_reload: "{% if pgdg_installation is changed %}yes{% else %}no{% endif %}"
+  notify: postgresql restart
+  become: yes

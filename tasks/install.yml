@@ -2,22 +2,44 @@
 
 - name: "Postgresql | Install | Main"
   apt:
-    name: "{{pgdg_base_packages}}"
-    state: latest
+    name: "{{ pgdg_base_packages }}"
+    state: present
+  become: yes
+  register: pgdg_installation
+  notify: postgresql restart
+
+- name: "Postgresql | Install | Clear Cache | Find"
+  find:
+    paths: "{{ pgdb_hash_cache_dir }}"
+    patterns: "*.*_password_hash"
+  register: pgdg_files_to_delete
+  when: pgdg_installation.changed
+
+- name: "Postgresql | Install | Clear Cache | Delete"
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  with_items: "{{ pgdg_files_to_delete.files }}"
+  when: pgdg_installation.changed and pgdg_files_to_delete.matched > 0
 
 - name: "Postgresql | Install | Tools"
   apt:
-    name: "{{pgdb_tools}}"
-    state: latest
+    name: "{{ pgdb_tools }}"
+    state: present
+  become: yes
 
-- name: "Postgresql | Install | Modules"
+- name: "Postgresql | Install | Extension"
   apt:
-    name: "postgresql-{{ pgdg_version }}-{{item}}"
-  loop: "{{pgdg_extensions}}"
+    name: "postgresql-{{ pgdg_version }}-{{ item }}"
+  loop: "{{ pgdg_extensions }}"
+  become: yes
+  notify: postgresql restart
 
 - name: "Postgresql | Install | Postgis"
   apt:
     name:
-      - "postgresql-{{ pgdg_version }}-postgis-{{pgdg_postgis_versions}}"
-      - "postgresql-{{ pgdg_version }}-postgis-{{pgdg_postgis_versions}}-scripts"
+      - "postgresql-{{ pgdg_version }}-postgis-{{ pgdg_postgis_versions }}"
+      - "postgresql-{{ pgdg_version }}-postgis-{{ pgdg_postgis_versions }}-scripts"
   when: pgdg_postgis_install
+  become: yes
+  notify: postgresql restart

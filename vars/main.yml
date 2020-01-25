@@ -12,5 +12,10 @@ pgdg_base_packages:
   - "postgresql-common"
 
 pgdb_tools:
-  - "python3-psycopg2"
-  - "sudo"
+  - python3-psycopg2
+  - python3-passlib
+  - sudo
+
+pgdb_salt: "{{ lookup('password', '../../data/.ansible_pgdb_salt chars=ascii_letters,digits length=10') }}"
+
+pgdb_hash_cache_dir: /var/cache/ansible

@@ -1,14 +1,21 @@
 ---
 # defaults file for egeneralov.postgresql
 
-pgdg_version: 12.1
+pgdg_version: 12
 
 pgdg_postgis_versions: 3
 pgdg_postgis_install: True
 
 pgdg_extensions:
-  - pg-stat-kcache
+  - "pg-stat-kcache"
 
+pgdg_shared_preload_libraries:
+  - pg_stat_statements
+  - pg_stat_kcache
+
+pgdg_shared_preload_libraries_change_allow: True
+
+pgdg_users: []
 #pgdg_users:
 #  - user: root
 #    password: root

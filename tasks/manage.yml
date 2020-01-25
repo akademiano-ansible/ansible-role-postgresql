@@ -1,3 +1,18 @@
+---
+
+- name: "Postgresql | Manage | Create cash hash dir"
+  file:
+    path: "{{ pgdb_hash_cache_dir }}"
+    state: directory
+  become: yes
+
+- name: "Postgresql | Manage | Users"
+  include_tasks: manage_user.yml
+  loop: "{{ pgdg_users }}"
+  loop_control:
+    loop_var: user
+
+#- meta: end_play
 
 - name: "Postgresql | Manage | Create databases"
   become: true
@@ -6,19 +21,8 @@
     encoding: UTF-8
     name: "{{ item.database }}"
     state: "{{ item.state | default('present') }}"
-  with_items:
-    - "{{ pgdg_users }}"
-
-- name: "Postgresql | Manage | Create users"
-  become: true
-  become_user: postgres
-  postgresql_user:
-    name: "{{ item.user }}"
-    password: "{{ item.password }}"
-    state: "{{ item.state | default('present') }}"
-    db: "{{ item.database | default(omit) }}"
-  with_items:
-    - "{{ pgdg_users }}"
+  loop: "{{ pgdg_users }}"
+  when: item.database is defined
 
 - name: "Postgresql | Manage | DB permissions"
   postgresql_privs:
@@ -30,7 +34,8 @@
     state: "{{ item.state | default('present') }}"
   become: true
   become_user: postgres
-  with_items: "{{ pgdg_users }}"
+  loop: "{{ pgdg_users }}"
+  when: item.database is defined
 
 - name: "Postgresql | Manage | in-DB permissions"
   postgresql_privs:
@@ -41,4 +46,14 @@
     state: "{{ item.state | default('present') }}"
   become: true
   become_user: postgres
-  with_items: "{{ pgdg_users }}"
+  loop: "{{ pgdg_users }}"
+  when: item.database is defined
+
+- name: "Postgresql | Manage | Extension | Create"
+  become: true
+  become_user: postgres
+  postgresql_ext:
+    name: timescaledb
+    db: "{{ item.database }}"
+  loop: "{{ pgdg_users }}"
+  when: item.database is defined
